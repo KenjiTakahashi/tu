@@ -44,10 +44,6 @@ type ParseCommand struct {
 	pattern []*PatternPiece
 }
 
-func (cmd *ParseCommand) Help() string {
-	return "tu p PATTERN FILES..."
-}
-
 func (cmd *ParseCommand) ParsePattern(in string) (out []*PatternPiece) {
 	current := &PatternPiece{}
 	out = append(out, current)
@@ -101,7 +97,7 @@ func (cmd *ParseCommand) ParsePattern(in string) (out []*PatternPiece) {
 
 func (cmd *ParseCommand) Process(file string) {
 	defer cmd.wg.Done()
-	cmd.ui.Error(fmt.Sprintf("Processing `%s`", file))
+	cmd.ui.Output(fmt.Sprintf("Processing `%s`", file))
 
 	filename := path.Base(file)
 	filename = strings.TrimSuffix(filename, path.Ext(filename))
@@ -124,7 +120,7 @@ func (cmd *ParseCommand) Process(file string) {
 
 	tagutil := exec.Command("tagutil", args...)
 	if err := tagutil.Run(); err != nil {
-		cmd.ui.Output(err.Error())
+		cmd.ui.Error(err.Error())
 	}
 }
 
@@ -146,15 +142,55 @@ func (cmd *ParseCommand) Run(args []string) int {
 	return 0
 }
 
+func (cmd *ParseCommand) Help() string {
+	return "tu w PATTERN FILES..."
+}
+
 func (cmd *ParseCommand) Synopsis() string {
-	return "Parses file name and writes tags to it"
+	return "Writes tags based on file name(s) pattern"
+}
+
+type EditCommand struct {
+	ui cli.Ui
+}
+
+func (cmd *EditCommand) Run(args []string) int {
+	if len(args) < 1 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+
+	args = append(args, "")
+	copy(args[1:], args[0:])
+	args[0] = "edit"
+	tagutil := exec.Command("tagutil", args...)
+	tagutil.Stdin = os.Stdin
+	tagutil.Stdout = os.Stdout
+	tagutil.Stderr = os.Stderr
+	if err := tagutil.Run(); err != nil {
+		cmd.ui.Error(err.Error())
+		return 1
+	}
+
+	return 0
+}
+
+func (cmd *EditCommand) Help() string {
+	return "tu i FILES..."
+}
+
+func (cmd *EditCommand) Synopsis() string {
+	return "Interactively edits tags using $EDITOR"
 }
 
 func main() {
 	ui := &cli.ConcurrentUi{Ui: &cli.BasicUi{Writer: os.Stdout}}
 	commands := map[string]cli.CommandFactory{
-		"p": func() (cli.Command, error) {
+		"w": func() (cli.Command, error) {
 			return &ParseCommand{ui: ui}, nil
+		},
+		"i": func() (cli.Command, error) {
+			return &EditCommand{ui: ui}, nil
 		},
 	}
 
