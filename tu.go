@@ -36,6 +36,13 @@ import (
 	"github.com/mitchellh/cli"
 )
 
+func prepend(args []string, arg string) []string {
+	args = append(args, "")
+	copy(args[1:], args[0:])
+	args[0] = arg
+	return args
+}
+
 type PatternPiece struct {
 	Sep  string
 	Name string
@@ -163,9 +170,7 @@ func (cmd *EditCommand) Run(args []string) int {
 		return 1
 	}
 
-	args = append(args, "")
-	copy(args[1:], args[0:])
-	args[0] = "edit"
+	args = prepend(args, "edit")
 	tagutil := exec.Command("tagutil", args...)
 	tagutil.Stdin = os.Stdin
 	tagutil.Stdout = os.Stdout
@@ -254,7 +259,41 @@ func (cmd *TitleCaseCommand) Help() string {
 }
 
 func (cmd *TitleCaseCommand) Synopsis() string {
-	return "Title Case the Tags"
+	return "Title Cases the Tags"
+}
+
+type RenameCommand struct {
+	ui cli.Ui
+}
+
+func (cmd *RenameCommand) Run(args []string) int {
+	if len(args) < 2 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+
+	if args[0] == "-Y" {
+		args[1] = fmt.Sprintf("rename:%s", args[1])
+	} else {
+		args[0] = fmt.Sprintf("rename:%s", args[0])
+	}
+	args = prepend(args, "-p")
+
+	tagutil := exec.Command("tagutil", args...)
+	if err := tagutil.Run(); err != nil {
+		cmd.ui.Error(err.Error())
+		return 1
+	}
+
+	return 0
+}
+
+func (cmd *RenameCommand) Help() string {
+	return "tu r [-Y] PATTERN FILES..."
+}
+
+func (cmd *RenameCommand) Synopsis() string {
+	return "Renames the files from tags based on pattern"
 }
 
 func main() {
@@ -268,6 +307,9 @@ func main() {
 		},
 		"t": func() (cli.Command, error) {
 			return &TitleCaseCommand{ui: ui}, nil
+		},
+		"r": func() (cli.Command, error) {
+			return &RenameCommand{ui: ui}, nil
 		},
 	}
 
