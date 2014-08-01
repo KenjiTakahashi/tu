@@ -22,6 +22,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -29,6 +30,8 @@ import (
 	"strings"
 	"sync"
 	"unicode"
+
+	"github.com/KenjiTakahashi/tu/titlecase"
 
 	"github.com/mitchellh/cli"
 )
@@ -183,6 +186,77 @@ func (cmd *EditCommand) Synopsis() string {
 	return "Interactively edits tags using $EDITOR"
 }
 
+type TitleCaseCommand struct {
+	ui cli.Ui
+	wg sync.WaitGroup
+}
+
+func (cmd *TitleCaseCommand) Process(file string) {
+	defer cmd.wg.Done()
+	cmd.ui.Output(fmt.Sprintf("Processing `%s`", file))
+
+	tagutil := exec.Command("tagutil", "-F", "json", file)
+	out, err := tagutil.Output()
+	if err != nil {
+		cmd.ui.Error(err.Error())
+		return
+	}
+
+	var intags []map[string]string
+	json.Unmarshal(out, &intags)
+
+	var wg sync.WaitGroup
+	ch := make(chan string)
+	for _, tag := range intags {
+		wg.Add(1)
+		go func(tag map[string]string, ch chan string) {
+			defer wg.Done()
+
+			for k, v := range tag {
+				ch <- fmt.Sprintf("set:%s=%s", k, titlecase.Convert(v))
+			}
+		}(tag, ch)
+	}
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	outtags := make([]string, 0, len(intags) + 1)
+	for tag := range ch {
+		outtags = append(outtags, tag)
+	}
+
+	outtags = append(outtags, file)
+	tagutil = exec.Command("tagutil", outtags...)
+	if err := tagutil.Run(); err != nil {
+		cmd.ui.Error(err.Error())
+	}
+}
+
+func (cmd *TitleCaseCommand) Run(args []string) int {
+	//TODO: [-t TAGS]
+	if len(args) < 1 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+	for _, file := range args {
+		cmd.wg.Add(1)
+		go cmd.Process(file)
+	}
+
+	cmd.wg.Wait()
+	return 0
+}
+
+func (cmd *TitleCaseCommand) Help() string {
+	return "tu t [-t TAGS] FILES..."
+}
+
+func (cmd *TitleCaseCommand) Synopsis() string {
+	return "Title Case the Tags"
+}
+
 func main() {
 	ui := &cli.ConcurrentUi{Ui: &cli.BasicUi{Writer: os.Stdout}}
 	commands := map[string]cli.CommandFactory{
@@ -191,6 +265,9 @@ func main() {
 		},
 		"i": func() (cli.Command, error) {
 			return &EditCommand{ui: ui}, nil
+		},
+		"t": func() (cli.Command, error) {
+			return &TitleCaseCommand{ui: ui}, nil
 		},
 	}
 
