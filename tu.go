@@ -43,6 +43,15 @@ func prepend(args []string, arg string) []string {
 	return args
 }
 
+func contains(args []string, arg string) bool {
+	for _, a := range args {
+		if a == arg {
+			return true
+		}
+	}
+	return false
+}
+
 type PatternPiece struct {
 	Sep  string
 	Name string
@@ -196,7 +205,7 @@ type TitleCaseCommand struct {
 	wg sync.WaitGroup
 }
 
-func (cmd *TitleCaseCommand) Process(file string) {
+func (cmd *TitleCaseCommand) Process(file string, tags []string) {
 	defer cmd.wg.Done()
 	cmd.ui.Output(fmt.Sprintf("Processing `%s`", file))
 
@@ -218,7 +227,9 @@ func (cmd *TitleCaseCommand) Process(file string) {
 			defer wg.Done()
 
 			for k, v := range tag {
-				ch <- fmt.Sprintf("set:%s=%s", k, titlecase.Convert(v))
+				if tags == nil || contains(tags, k) {
+					ch <- fmt.Sprintf("set:%s=%s", k, titlecase.Convert(v))
+				}
 			}
 		}(tag, ch)
 	}
@@ -227,7 +238,7 @@ func (cmd *TitleCaseCommand) Process(file string) {
 		close(ch)
 	}()
 
-	outtags := make([]string, 0, len(intags) + 1)
+	var outtags []string
 	for tag := range ch {
 		outtags = append(outtags, tag)
 	}
@@ -240,14 +251,24 @@ func (cmd *TitleCaseCommand) Process(file string) {
 }
 
 func (cmd *TitleCaseCommand) Run(args []string) int {
-	//TODO: [-t TAGS]
 	if len(args) < 1 {
 		cmd.ui.Output(cmd.Help())
 		return 1
 	}
+
+	var tags []string
+	if args[0] == "-t" {
+		if len(args) < 3 {
+			cmd.ui.Output(cmd.Help())
+			return 1
+		}
+		tags = strings.Split(args[1], ",")
+		args = args[2:]
+	}
+
 	for _, file := range args {
 		cmd.wg.Add(1)
-		go cmd.Process(file)
+		go cmd.Process(file, tags)
 	}
 
 	cmd.wg.Wait()
