@@ -193,11 +193,11 @@ func (cmd *EditCommand) Run(args []string) int {
 }
 
 func (cmd *EditCommand) Help() string {
-	return "tu i FILES..."
+	return "tu e FILES..."
 }
 
 func (cmd *EditCommand) Synopsis() string {
-	return "Interactively edits tags using $EDITOR"
+	return "Edits tags interactively using $EDITOR"
 }
 
 type TitleCaseCommand struct {
@@ -325,7 +325,7 @@ func main() {
 		"w": func() (cli.Command, error) {
 			return &ParseCommand{ui: ui}, nil
 		},
-		"i": func() (cli.Command, error) {
+		"e": func() (cli.Command, error) {
 			return &EditCommand{ui: ui}, nil
 		},
 		"t": func() (cli.Command, error) {
