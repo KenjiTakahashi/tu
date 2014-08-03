@@ -162,11 +162,16 @@ func (cmd *ParseCommand) Run(args []string) int {
 }
 
 func (cmd *ParseCommand) Help() string {
-	return "tu w PATTERN FILES..."
+	return strings.TrimSpace(`
+usage: tu w PATTERN FILES...
+
+PATTERN is a string with placeholders in form of %{<name>}
+	or just %<name>, if <name> is one word.
+	`)
 }
 
 func (cmd *ParseCommand) Synopsis() string {
-	return "Writes tags based on file name(s) pattern"
+	return "Writes tags by applying filename to a pattern"
 }
 
 type EditCommand struct {
@@ -193,7 +198,7 @@ func (cmd *EditCommand) Run(args []string) int {
 }
 
 func (cmd *EditCommand) Help() string {
-	return "tu e FILES..."
+	return "usage: tu e FILES..."
 }
 
 func (cmd *EditCommand) Synopsis() string {
@@ -278,7 +283,12 @@ func (cmd *TitleCaseCommand) Run(args []string) int {
 }
 
 func (cmd *TitleCaseCommand) Help() string {
-	return "tu t [-t TAGS] FILES..."
+	return strings.TrimSpace(`
+usage: tu t [-t TAGS] FILES...
+
+-t TAGS	Comma separated list of tag names.
+	If not specified, uses everything.
+	`)
 }
 
 func (cmd *TitleCaseCommand) Synopsis() string {
@@ -312,11 +322,18 @@ func (cmd *RenameCommand) Run(args []string) int {
 }
 
 func (cmd *RenameCommand) Help() string {
-	return "tu r [-Y] PATTERN FILES..."
+	return strings.TrimSpace(`
+usage: tu r [-Y] PATTERN FILES...
+
+-Y Answer Yes to all questions.
+
+PATTERN is a string with placeholders in form of %{<name>}
+	or just %<name>, if <name> is one word.
+	`)
 }
 
 func (cmd *RenameCommand) Synopsis() string {
-	return "Renames the files from tags based on pattern"
+	return "Renames files by applying tags to a pattern"
 }
 
 func main() {
