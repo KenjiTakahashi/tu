@@ -111,8 +111,37 @@ var ConvertTests = []struct {
 
 func TestConvert(t *testing.T) {
 	for i, tt := range ConvertTests {
-		actual := Convert(tt.input)
+		actual := Convert(tt.input, nil, nil)
 
 		assert.Equal(t, tt.expected, actual, fmt.Sprintf("%d", i))
 	}
+}
+
+var Convert_PreHookTests = []struct {
+	input string
+	expected string
+}{
+	{"TEST", "mock"},
+	{"test", "Mock"},
+}
+
+func TestConvert_PreHook(t *testing.T) {
+	hook := func(word string, all_caps bool) (string, bool) {
+		return "mock", all_caps
+	}
+	for i, tt := range Convert_PreHookTests {
+		actual := Convert(tt.input, hook, nil)
+
+		assert.Equal(t, tt.expected, actual, fmt.Sprintf("%d", i))
+	}
+}
+
+func TestConvert_PostHook(t *testing.T) {
+	hook := func (word string, all_caps bool) string {
+		return "mock"
+	}
+
+	actual := Convert("test", nil, hook)
+
+	assert.Equal(t, "mock", actual)
 }

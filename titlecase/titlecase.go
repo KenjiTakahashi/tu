@@ -49,7 +49,10 @@ var (
 	WORDS = regexp.MustCompile(`[\t ]`)
 )
 
-func Convert(text string) string {
+type PreHook func(word string, all_caps bool) (string, bool)
+type PostHook func(word string, all_caps bool) string
+
+func Convert(text string, pre_hook PreHook, post_hook PostHook) string {
 	input := LINES.Split(text, -1)
 	output := make([]string, len(input))
 
@@ -59,6 +62,15 @@ func Convert(text string) string {
 		tc_line := make([]string, len(words))
 
 		for j, word := range words {
+			if pre_hook != nil {
+				stop := false
+				word, stop = pre_hook(word, all_caps)
+				if stop {
+					tc_line[j] = word
+					continue
+				}
+			}
+
 			if all_caps {
 				if UC_INITIALS.MatchString(word) {
 					tc_line[j] = word
@@ -88,6 +100,10 @@ func Convert(text string) string {
 					cap_first[k] = CAPFIRST.ReplaceAllStringFunc(ss, strings.ToTitle)
 				}
 				tc_line[j] = strings.Join(cap_first, sep)
+			}
+
+			if post_hook != nil {
+				tc_line[j] = post_hook(tc_line[j], all_caps)
 			}
 		}
 

@@ -228,7 +228,9 @@ func (cmd *TitleCaseCommand) Process(file string, tags []string) {
 
 			for k, v := range tag {
 				if tags == nil || contains(tags, k) {
-					ch <- fmt.Sprintf("set:%s=%s", k, titlecase.Convert(v))
+					ch <- fmt.Sprintf("set:%s=%s", k, titlecase.Convert(
+						v, nil, nil,
+					))
 				}
 			}
 		}(tag, ch)
