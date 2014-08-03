@@ -118,7 +118,7 @@ func TestConvert(t *testing.T) {
 }
 
 var Convert_PreHookTests = []struct {
-	input string
+	input    string
 	expected string
 }{
 	{"TEST", "mock"},
@@ -137,7 +137,7 @@ func TestConvert_PreHook(t *testing.T) {
 }
 
 func TestConvert_PostHook(t *testing.T) {
-	hook := func (word string, all_caps bool) string {
+	hook := func(word string, all_caps bool) string {
 		return "mock"
 	}
 

@@ -21,6 +21,14 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// Package titlecase provides a helper function for transforming an arbitrary
+// text into a capitalized version, as described by NY Times Manual of Style.
+//
+// Additional hooks can be supplied to modify the standard behaviour,
+// see Convert documentation for further details.
+//
+// Original Perl version by: John Gruber http://daringfireball.net/ 10 May 2008
+// Python version by Stuart Colville http://muffinresearch.co.uk
 package titlecase
 
 import (
@@ -49,9 +57,20 @@ var (
 	WORDS = regexp.MustCompile(`[\t ]`)
 )
 
+// PreHook defines convert's per hook function signature
 type PreHook func(word string, all_caps bool) (string, bool)
+
+// PostHook defines convert's post hook function signature
 type PostHook func(word string, all_caps bool) string
 
+// Convert changes input string to conform to the NY Times Manual of Style.
+//
+// If pre_hook and/or post_hook arguments are not nil, they will be run,
+// respectively, before and after the standard transformations.
+//
+// Both hook functions should return a transformed version of the string.
+// Additionally, pre_hook returns true if the returned string is final,
+// or false if it should still be run through standard transformations.
 func Convert(text string, pre_hook PreHook, post_hook PostHook) string {
 	input := LINES.Split(text, -1)
 	output := make([]string, len(input))
