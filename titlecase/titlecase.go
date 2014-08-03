@@ -108,10 +108,8 @@ func Convert(text string, pre_hook PreHook, post_hook PostHook) string {
 		}
 
 		result := strings.Join(tc_line, " ")
-		//FIXME: Two submatches here
 		result = SMALL_FIRST.ReplaceAllStringFunc(result, strings.Title)
 		result = SMALL_LAST.ReplaceAllStringFunc(result, strings.Title)
-		//FIXME: Two submatches here
 		result = SUBPHRASE.ReplaceAllStringFunc(result, strings.Title)
 
 		output[i] = result
