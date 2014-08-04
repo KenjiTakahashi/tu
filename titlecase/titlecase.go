@@ -57,10 +57,10 @@ var (
 	WORDS = regexp.MustCompile(`[\t ]`)
 )
 
-// PreHook defines convert's per hook function signature
+// PreHook defines Convert per hook function signature
 type PreHook func(word string, all_caps bool) (string, bool)
 
-// PostHook defines convert's post hook function signature
+// PostHook defines Convert post hook function signature
 type PostHook func(word string, all_caps bool) string
 
 // Convert changes input string to conform to the NY Times Manual of Style.
