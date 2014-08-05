@@ -23,7 +23,7 @@ should get you going.
 #### w
 
 ```bash
-$ tu r PATTERN FILES...
+$ tu w PATTERN FILES...
 ```
 
 Writes tags to files based on their filenames. Pattern conforms to [tagutil](https://github.com/kAworu/tagutil#renaming-files)'s definition.
@@ -42,7 +42,9 @@ Opens interactive editing session for each file. It works by opening a YAML form
 $ tu t [-t TAGS] FILES...
 ```
 
-Applies TitleCase transformation to specified files. If `-t` flag is present, it should contain a comma separated list of tag names to transform. Otherwise, all found tags are transformed.
+Applies TitleCase transformation to specified files.
+
+If `-t` flag is present, it should contain a comma separated list of tag names to transform. Otherwise, all found tags are transformed.
 
 #### r
 
