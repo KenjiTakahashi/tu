@@ -33,57 +33,57 @@ var ParsePatternTests = []struct {
 	expected []*PatternPiece
 }{
 	{"%n1", []*PatternPiece{
-		&PatternPiece{Name: "n1"},
+		{Name: "n1"},
 	}},
 	{"%{n%_1b}", []*PatternPiece{
-		&PatternPiece{Name: "n%_1b"},
+		{Name: "n%_1b"},
 	}},
 	{"_-_", []*PatternPiece{
-		&PatternPiece{Sep: "_-_"},
+		{Sep: "_-_"},
 	}},
 	{"%n1%n2", []*PatternPiece{
-		&PatternPiece{Name: "n1"},
-		&PatternPiece{Name: "n2"},
+		{Name: "n1"},
+		{Name: "n2"},
 	}},
 	{"%{n%_1b}%{n%_2c}", []*PatternPiece{
-		&PatternPiece{Name: "n%_1b"},
-		&PatternPiece{Name: "n%_2c"},
+		{Name: "n%_1b"},
+		{Name: "n%_2c"},
 	}},
 	{"%n1_%n2", []*PatternPiece{
-		&PatternPiece{Sep: "_", Name: "n1"},
-		&PatternPiece{Name: "n2"},
+		{Sep: "_", Name: "n1"},
+		{Name: "n2"},
 	}},
 	{"%{n%_1b}_%{n%_2c}", []*PatternPiece{
-		&PatternPiece{Sep: "_", Name: "n%_1b"},
-		&PatternPiece{Name: "n%_2c"},
+		{Sep: "_", Name: "n%_1b"},
+		{Name: "n%_2c"},
 	}},
 	{"%n1_%{n%_2c}", []*PatternPiece{
-		&PatternPiece{Sep: "_", Name: "n1"},
-		&PatternPiece{Name: "n%_2c"},
+		{Sep: "_", Name: "n1"},
+		{Name: "n%_2c"},
 	}},
 	{"%{n%_1b}_%n2", []*PatternPiece{
-		&PatternPiece{Sep: "_", Name: "n%_1b"},
-		&PatternPiece{Name: "n2"},
+		{Sep: "_", Name: "n%_1b"},
+		{Name: "n2"},
 	}},
 	{"_%n2", []*PatternPiece{
-		&PatternPiece{Sep: "_"},
-		&PatternPiece{Name: "n2"},
+		{Sep: "_"},
+		{Name: "n2"},
 	}},
 	{"_%{n%_2c}", []*PatternPiece{
-		&PatternPiece{Sep: "_"},
-		&PatternPiece{Name: "n%_2c"},
+		{Sep: "_"},
+		{Name: "n%_2c"},
 	}},
 	{"%n1_", []*PatternPiece{
-		&PatternPiece{Sep: "_", Name: "n1"},
+		{Sep: "_", Name: "n1"},
 	}},
 	{"%{n%_1b}_", []*PatternPiece{
-		&PatternPiece{Sep: "_", Name: "n%_1b"},
+		{Sep: "_", Name: "n%_1b"},
 	}},
 	{"%{artist}_-_%album - %{tracknumber}@%title.flac", []*PatternPiece{
-		&PatternPiece{Sep: "_-_", Name: "artist"},
-		&PatternPiece{Sep: " - ", Name: "album"},
-		&PatternPiece{Sep: "@", Name: "tracknumber"},
-		&PatternPiece{Sep: ".flac", Name: "title"},
+		{Sep: "_-_", Name: "artist"},
+		{Sep: " - ", Name: "album"},
+		{Sep: "@", Name: "tracknumber"},
+		{Sep: ".flac", Name: "title"},
 	}},
 }
 
