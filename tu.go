@@ -336,6 +336,58 @@ func (cmd *RenameCommand) Synopsis() string {
 	return "Renames files by applying tags to a pattern"
 }
 
+type SetCommand struct {
+	ui cli.Ui
+}
+
+func (cmd *SetCommand) Run(args []string) int {
+	sets := []string{}
+	files := []string{}
+
+	var key string
+	infiles := false
+	for _, arg := range args {
+		if arg == "--" {
+			infiles = true
+		}
+
+		if infiles {
+			files = append(files, arg)
+			continue
+		}
+
+		if key == "" {
+			key = arg
+		} else {
+			sets = append(sets, fmt.Sprintf("set:%s=%s", key, arg))
+			key = ""
+		}
+	}
+
+	if len(sets) == 0 || len(files) == 0 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+
+	tagutil := exec.Command("tagutil", append(sets, files...)...)
+	if err := tagutil.Run(); err != nil {
+		cmd.ui.Error(err.Error())
+		return 1
+	}
+
+	return 0
+}
+
+func (cmd *SetCommand) Help() string {
+	return strings.TrimSpace(`
+usage: tu s <KEY VALUE>... -- FILES...
+	`)
+}
+
+func (cmd *SetCommand) Synopsis() string {
+	return "Sets keys to values in files"
+}
+
 func main() {
 	ui := &cli.ConcurrentUi{Ui: &cli.BasicUi{Writer: os.Stdout}}
 	commands := map[string]cli.CommandFactory{
@@ -350,6 +402,9 @@ func main() {
 		},
 		"r": func() (cli.Command, error) {
 			return &RenameCommand{ui: ui}, nil
+		},
+		"s": func() (cli.Command, error) {
+			return &SetCommand{ui: ui}, nil
 		},
 	}
 

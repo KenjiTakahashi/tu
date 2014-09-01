@@ -56,6 +56,14 @@ Renames files based on their tags. This actually only calls `tagutil -p rename:P
 
 If `-Y` flag is present, all questions are answered YES. **Note:** If applying a pattern on two different files results in the same filename, this option may eat your files. So be careful.
 
+#### s
+
+```bash
+$ tu s <KEY VALUE>... -- FILES...
+```
+
+Sets keys to values in files. Example usage: `tu s artist "Jacek Kaczmarski" year 2002 -- "01 - Zapowiedź" "02 - Lot Ikara"`.
+
 ## titlecase
 
 There is also a package here named `titlecase`, which is more or less a rewrite of [Stuart Coville](http://muffinresearch.co.uk)'s Python library (available [here](https://github.com/ppannuto/python-titlecase)).
