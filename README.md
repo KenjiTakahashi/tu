@@ -59,10 +59,20 @@ If `-Y` flag is present, all questions are answered YES. **Note:** If applying a
 #### s
 
 ```bash
-$ tu s <KEY VALUE>... -- FILES...
+$ tu s <TAG VALUE>... -- FILES...
 ```
 
-Sets keys to values in files. Example usage: `tu s artist "Jacek Kaczmarski" year 2002 -- "01 - Zapowiedź" "02 - Lot Ikara"`.
+Sets tags to values in files. Example usage: `tu s artist "Jacek Kaczmarski" year 2002 -- "01 - Zapowiedź" "02 - Lot Ikara"`.
+
+#### p
+
+```bash
+$ tu p [-r] [TAGS...] -- FILES...
+```
+
+Purges (removes) specified tags from files. If no tags are specified, removes all tags present in the files.
+
+If `-r` flag is present, all but the specified tags will be removed.
 
 ## titlecase
 

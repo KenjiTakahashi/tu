@@ -52,6 +52,18 @@ func contains(args []string, arg string) bool {
 	return false
 }
 
+func readTags(file string) ([]map[string]string, error) {
+	tagutil := exec.Command("tagutil", "-F", "json", file)
+	out, err := tagutil.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []map[string]string
+	json.Unmarshal(out, &tags)
+	return tags, nil
+}
+
 type PatternPiece struct {
 	Sep  string
 	Name string
@@ -214,15 +226,11 @@ func (cmd *TitleCaseCommand) Process(file string, tags []string) {
 	defer cmd.wg.Done()
 	cmd.ui.Output(fmt.Sprintf("Processing `%s`", file))
 
-	tagutil := exec.Command("tagutil", "-F", "json", file)
-	out, err := tagutil.Output()
+	intags, err := readTags(file)
 	if err != nil {
 		cmd.ui.Error(err.Error())
 		return
 	}
-
-	var intags []map[string]string
-	json.Unmarshal(out, &intags)
 
 	var wg sync.WaitGroup
 	ch := make(chan string)
@@ -251,7 +259,7 @@ func (cmd *TitleCaseCommand) Process(file string, tags []string) {
 	}
 
 	outtags = append(outtags, file)
-	tagutil = exec.Command("tagutil", outtags...)
+	tagutil := exec.Command("tagutil", outtags...)
 	if err := tagutil.Run(); err != nil {
 		cmd.ui.Error(err.Error())
 	}
@@ -380,12 +388,112 @@ func (cmd *SetCommand) Run(args []string) int {
 
 func (cmd *SetCommand) Help() string {
 	return strings.TrimSpace(`
-usage: tu s <KEY VALUE>... -- FILES...
+usage: tu s <TAG VALUE>... -- FILES...
 	`)
 }
 
 func (cmd *SetCommand) Synopsis() string {
-	return "Sets keys to values in files"
+	return "Sets tags to values in files"
+}
+
+type PurgeCommand struct {
+	ui cli.Ui
+	wg sync.WaitGroup
+}
+
+func (cmd *PurgeCommand) Process(file string, keys []string) {
+	defer cmd.wg.Done()
+
+	tags, err := readTags(file)
+	if err != nil {
+		cmd.ui.Error(err.Error())
+		return
+	}
+
+	clears := []string{}
+	for _, tag := range tags {
+		for k := range tag {
+			if !contains(keys, k) {
+				clears = append(clears, fmt.Sprintf("clear:%s", k))
+			}
+		}
+	}
+
+	clears = append(clears, file)
+	tagutil := exec.Command("tagutil", clears...)
+	if err := tagutil.Run(); err != nil {
+		cmd.ui.Error(err.Error())
+	}
+}
+
+func (cmd *PurgeCommand) Run(args []string) int {
+	if len(args) == 0 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+
+	keys := []string{}
+	files := []string{}
+
+	reversed := false
+	if args[0] == "-r" {
+		reversed = true
+		args = args[1:]
+	}
+
+	infiles := false
+	for _, arg := range args {
+		if !infiles {
+			if arg == "--" {
+				infiles = true
+				continue
+			}
+			keys = append(keys, arg)
+		} else {
+			files = append(files, arg)
+		}
+	}
+
+	if len(files) == 0 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+
+	if !reversed {
+		for i := range keys {
+			keys[i] = fmt.Sprintf("clear:%s", keys[i])
+		}
+		if len(keys) == 0 {
+			keys = append(keys, "clear:")
+		}
+		tagutil := exec.Command("tagutil", append(keys, files...)...)
+		if err := tagutil.Run(); err != nil {
+			cmd.ui.Error(err.Error())
+			return 1
+		}
+	} else {
+		for _, file := range files {
+			cmd.wg.Add(1)
+			go cmd.Process(file, keys)
+		}
+		cmd.wg.Wait()
+	}
+
+	return 0
+}
+
+func (cmd *PurgeCommand) Help() string {
+	return strings.TrimSpace(`
+usage: tu p [-r] TAGS... -- FILES...
+
+-r Purge all but the specified tags.
+
+If no TAGS are specified, all (or none with '-r') tags will be removed.
+	`)
+}
+
+func (cmd *PurgeCommand) Synopsis() string {
+	return "Purges tags from files"
 }
 
 func main() {
@@ -405,6 +513,9 @@ func main() {
 		},
 		"s": func() (cli.Command, error) {
 			return &SetCommand{ui: ui}, nil
+		},
+		"p": func() (cli.Command, error) {
+			return &PurgeCommand{ui: ui}, nil
 		},
 	}
 
