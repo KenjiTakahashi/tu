@@ -64,11 +64,11 @@ type PostHook func(word string, allCaps bool) string
 
 // Convert changes input string to conform to the NY Times Manual of Style.
 //
-// If pre_hook and/or post_hook arguments are not nil, they will be run,
+// If preHook and/or postHook arguments are not nil, they will be run,
 // respectively, before and after the standard transformations.
 //
 // Both hook functions should return a transformed version of the string.
-// Additionally, pre_hook returns true if the returned string is final,
+// Additionally, preHook returns true if the returned string is final,
 // or false if it should still be run through standard transformations.
 func Convert(text string, preHook PreHook, postHook PostHook) string {
 	input := rLines.Split(text, -1)

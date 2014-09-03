@@ -117,7 +117,7 @@ func TestConvert(t *testing.T) {
 	}
 }
 
-var Convert_PreHookTests = []struct {
+var ConvertPreHookTests = []struct {
 	input    string
 	expected string
 }{
@@ -129,7 +129,7 @@ func TestConvert_PreHook(t *testing.T) {
 	hook := func(word string, all_caps bool) (string, bool) {
 		return "mock", all_caps
 	}
-	for i, tt := range Convert_PreHookTests {
+	for i, tt := range ConvertPreHookTests {
 		actual := Convert(tt.input, hook, nil)
 
 		assert.Equal(t, tt.expected, actual, fmt.Sprintf("%d", i))
