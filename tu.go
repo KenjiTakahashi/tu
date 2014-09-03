@@ -484,7 +484,7 @@ func (cmd *PurgeCommand) Run(args []string) int {
 
 func (cmd *PurgeCommand) Help() string {
 	return strings.TrimSpace(`
-usage: tu p [-r] TAGS... -- FILES...
+usage: tu p [-r] [TAGS...] -- FILES...
 
 -r Purge all but the specified tags.
 
