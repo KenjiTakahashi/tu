@@ -23,10 +23,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strings"
 	"sync"
 	"unicode"
@@ -496,6 +498,85 @@ func (cmd *PurgeCommand) Synopsis() string {
 	return "Purges tags from files"
 }
 
+type NumberCommand struct {
+	ui cli.Ui
+	wg sync.WaitGroup
+	format string
+	total int
+	letters []byte
+}
+
+func (cmd *NumberCommand) Process(file string, no int) {
+	defer cmd.wg.Done()
+
+	args := make([]interface{}, len(cmd.letters))
+	for i, letter := range cmd.letters {
+		if letter == 'n' {
+			args[i] = no
+		} else if letter == 't' {
+			args[i] = cmd.total
+		}
+	}
+
+	tagutil := exec.Command("tagutil", fmt.Sprintf(
+		"set:tracknumber=%s",
+		fmt.Sprintf(cmd.format, args...),
+	), file)
+	if err := tagutil.Run(); err != nil {
+		cmd.ui.Error(err.Error())
+	}
+}
+
+func (cmd *NumberCommand) Run(args []string) int {
+	flags := flag.NewFlagSet("number", flag.ContinueOnError)
+	flags.Usage = func() { cmd.ui.Output(cmd.Help()) }
+	cmd.total = *flags.Int("t", 0, "")
+	no := flags.Int("s", 1, "")
+	if err := flags.Parse(args); err != nil {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+	args = flags.Args()
+	if len(args) < 2 {
+		cmd.ui.Output(cmd.Help())
+		return 1
+	}
+
+	pattern := regexp.MustCompile(`0*[nt]`)
+	cmd.format = pattern.ReplaceAllStringFunc(args[0], func(s string) string {
+		cmd.letters = append(cmd.letters, s[len(s) - 1])
+		return fmt.Sprintf("%%0%dd", len(s))
+	})
+
+	for _, file := range args[1:] {
+		cmd.wg.Add(1)
+		go cmd.Process(file, *no)
+		*no += 1
+	}
+	cmd.wg.Wait()
+
+	return 0
+}
+
+func (cmd *NumberCommand) Help() string {
+	return strings.TrimSpace(`
+usage: tu n [-s START] [-t TOTAL] PATTERN FILES...
+
+-s START Starting number (defaults to 1).
+-t TOTAL Total number of tracks (defaults to 0, used with 't' pattern letter).
+
+PATTERN is a string in form of:
+	zero or more '0's indicating how much digits should the number have
+	letter 'n' and/or 't' indicating track number and total tracks, respectively
+	any other letters (e.g. '/') remain intact
+example: '0n/t' will result in '01/19', '02/19', ..., '19/19'
+	`)
+}
+
+func (cmd *NumberCommand) Synopsis() string {
+	return "Numbers files and formats tracknumber tags"
+}
+
 func main() {
 	ui := &cli.ConcurrentUi{Ui: &cli.BasicUi{Writer: os.Stdout}}
 	commands := map[string]cli.CommandFactory{
@@ -516,6 +597,9 @@ func main() {
 		},
 		"p": func() (cli.Command, error) {
 			return &PurgeCommand{ui: ui}, nil
+		},
+		"n": func() (cli.Command, error) {
+			return &NumberCommand{ui: ui}, nil
 		},
 	}
 
