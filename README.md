@@ -74,6 +74,23 @@ Purges (removes) specified tags from files. If no tags are specified, removes al
 
 If `-r` flag is present, all but the specified tags will be removed.
 
+#### n
+
+```
+$ tu n [-s START] [-t TOTAL] PATTERN FILES...
+```
+
+Numbers files according to `PATTERN` in order of specification, starting with `1` or `-s START`.
+
+Optional `-t TOTAL` can be specified for patterns utilizing it.
+
+PATTERN is a string in form of:
+* zero or more '0's indicating how much digits should the number have
+* letter 'n' and/or 't' indicating track number and total tracks, respectively
+* any other letters (e.g. '/') remain intact
+
+For example: '0n/t' will result in '01/19', '02/19', ..., '19/19'.
+
 ## titlecase
 
 There is also a package here named `titlecase`, which is more or less a rewrite of [Stuart Coville](http://muffinresearch.co.uk)'s Python library (available [here](https://github.com/ppannuto/python-titlecase)).
