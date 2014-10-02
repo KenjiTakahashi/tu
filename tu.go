@@ -518,8 +518,14 @@ func (cmd *NumberCommand) Process(file string, no int) {
 		}
 	}
 
+	trackTag := "tracknumber"
+	if strings.ToLower(file[len(file)-3:]) == "mp3" {
+		trackTag = "track"
+	}
+
 	tagutil := exec.Command("tagutil", fmt.Sprintf(
-		"set:tracknumber=%s",
+		"set:%s=%s",
+		trackTag,
 		fmt.Sprintf(cmd.format, args...),
 	), file)
 	if err := tagutil.Run(); err != nil {
