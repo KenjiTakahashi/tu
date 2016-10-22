@@ -499,10 +499,10 @@ func (cmd *PurgeCommand) Synopsis() string {
 }
 
 type NumberCommand struct {
-	ui cli.Ui
-	wg sync.WaitGroup
-	format string
-	total int
+	ui      cli.Ui
+	wg      sync.WaitGroup
+	format  string
+	total   int
 	letters []byte
 }
 
@@ -550,7 +550,7 @@ func (cmd *NumberCommand) Run(args []string) int {
 
 	pattern := regexp.MustCompile(`0*[nt]`)
 	cmd.format = pattern.ReplaceAllStringFunc(args[0], func(s string) string {
-		cmd.letters = append(cmd.letters, s[len(s) - 1])
+		cmd.letters = append(cmd.letters, s[len(s)-1])
 		return fmt.Sprintf("%%0%dd", len(s))
 	})
 
