@@ -406,6 +406,8 @@ type PurgeCommand struct {
 func (cmd *PurgeCommand) Process(file string, keys []string) {
 	defer cmd.wg.Done()
 
+	cmd.ui.Output(fmt.Sprintf("processing:`%s`", file))
+
 	tags, err := readTags(file)
 	if err != nil {
 		cmd.ui.Error(err.Error())
