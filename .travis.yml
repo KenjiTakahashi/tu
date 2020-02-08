@@ -15,3 +15,7 @@ go:
 install:
   - go get github.com/stretchr/testify
   - go get -v ./...
+
+matrix:
+  allow_failures:
+    - go: tip
