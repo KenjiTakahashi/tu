@@ -95,7 +95,7 @@ func TestParsePattern(t *testing.T) {
 
 		assert.Equal(
 			t, tt.expected, actual,
-			fmt.Sprintf("%d: %q => %q != %q", i, tt.input, actual, tt.expected),
+			fmt.Sprintf("%d: %q => %v != %v", i, tt.input, actual, tt.expected),
 		)
 	}
 }

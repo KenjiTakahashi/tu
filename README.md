@@ -6,7 +6,7 @@ This is basically a [tagutil](https://github.com/kAworu/tagutil) wrapper with so
 
 ## installation
 
-First, you have to [get Go](http://golang.org/doc/install). Note that version >= 1.1 is required.
+First, you have to [get Go](http://golang.org/doc/install). Note that version >= 1.9 is required.
 
 Second, you have to [get tagutil](https://github.com/kAworu/tagutil). Note that JSON support is required.
 
