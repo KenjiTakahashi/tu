@@ -359,6 +359,7 @@ func (cmd *SetCommand) Run(args []string) int {
 	for _, arg := range args {
 		if arg == "--" {
 			infiles = true
+			continue
 		}
 
 		if infiles {
@@ -380,8 +381,8 @@ func (cmd *SetCommand) Run(args []string) int {
 	}
 
 	tagutil := exec.Command("tagutil", append(sets, files...)...)
-	if err := tagutil.Run(); err != nil {
-		cmd.ui.Error(err.Error())
+	if out, err := tagutil.CombinedOutput(); err != nil {
+		cmd.ui.Error(string(out))
 		return 1
 	}
 
